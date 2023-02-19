@@ -1,9 +1,12 @@
-﻿<!DOCTYPE html>
+﻿<?php
+include "inc/ses.php"
+?>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>HTML5/JavaScript Event Calendar (Open-Source)</title>
+  <title>Library Room Reservation</title>
 
   <style type="text/css">
       p, body, td, input, select { font-family: -apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-size: 14px; }
@@ -65,6 +68,13 @@
 </div>
 
 <script>
+    function getTimeFromDate(dateString) {
+      const date = new Date(dateString);
+      const hour = String(date.getHours()).padStart(2, "0");
+      const minute = String(date.getMinutes()).padStart(2, "0");
+      const second = String(date.getSeconds()).padStart(2, "0");
+      return `${hour}:${minute}:${second}`;
+    }
    var picker = new DayPilot.DatePicker({
         target: 'start', 
         pattern: 'yyyy-MM-dd', 
@@ -114,7 +124,9 @@
         end: args.newEnd,
         text: args.e.text(),
         color: args.e.data.barColor,
-        status: args.e.data.status
+        status: args.e.data.status,
+        rtype: args.e.data.rtype,
+        text1: args.e.data.text1  
       };
       //console.log(args.e.data.barColor)
       await DayPilot.Http.post(`/api/event_update.php`, data);
@@ -129,8 +141,9 @@
         end: args.newEnd,
         text: args.e.text(),
         color: args.e.data.barColor,
-        status: args.e.data.status
-        
+        status: args.e.data.status,
+        rtype: args.e.data.rtype,
+        text1: args.e.data.text1    
       };
       await DayPilot.Http.post(`/api/event_update.php`, data);
       console.log("Resized.");
@@ -149,9 +162,16 @@
           {name: "Pending", id: 'pending'},
           {name: "Denied", id: 'denied'},
 
-      ]
+      ];
+      const restypes = [
+          {name: "CLASS", id: 'class'},
+          {name: "Meeting/Seminar", id: 'mesem'},
+          {name: "Others", id: 'others'},
+
+      ];
       const form = [
-        {name: "Name", id: "text"},
+        {name: "Type of Reservation", id: "rtype", type: "select", options: restypes},
+        {name: "Subject/Name", id: "text"},
         {name: "Reserved by:", id: "text1"},
         {name: "Status", id: "status", type: " select", options: statuses},
         {name: "Color", id: "barColor", type: "select", options: colors},
@@ -170,7 +190,8 @@
         text: modal.result.text,
         text1: modal.result.text1,
         barColor: modal.result.barColor,
-        status: modal.result.status
+        status: modal.result.status,
+        rtype: modal.result.rtype
 
       };
     
@@ -183,7 +204,8 @@
         text: modal.result.text,
         text1: modal.result.text1,
         barColor: modal.result.barColor,
-        status: modal.result.status
+        status: modal.result.status,
+        rtype: modal.result.rtype
       });
 
       console.log(event)
@@ -192,9 +214,25 @@
       app.editEvent(args.e);
     },
     onBeforeEventRender: args => {
+      console.log(args.data)     
       if (args.data.status == 'approved'){
-      
+        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part3 ="<hr>" + args.data.status.toUpperCase()     
+        args.data.html = part1 + part2 + part3
+
+        args.data.backColor = "green";
+        args.data.fontColor ="white"        
+      }
+      if (args.data.status == 'pending'){      
+        args.data.html = args.data.text.toUpperCase() + ":" + "[" + args.data.status + "]";
+        args.data.backColor = "Yellow";
+        args.data.fontColor ="black"        
+      }
+      if (args.data.status == 'denied'){      
         args.data.html = args.data.text + ":" + "[" + args.data.status + "]";
+        args.data.backColor = "red";
+        args.data.fontColor ="white"        
       }
       args.data.areas = [
         {
@@ -260,10 +298,17 @@
           {name: "Pending", id: 'pending'},
           {name: "Denied", id: 'denied'},
 
-      ]
+      ];
+      const restypes = [
+          {name: "CLASS", id: 'class'},
+          {name: "Meeting/Seminar", id: 'mesem'},
+          {name: "Others", id: 'others'},
+
+      ];
 
       const form = [
         //{ name: "Name", id: "text" }
+        {name: "Type of Reservation", id: "rtype", type: "select", options: restypes},
         {name: "Text", id: "text"},
         {name: "Start", id: "start", type: "datetime"},
         {name: "End", id: "end", type: "datetime"},
@@ -286,7 +331,8 @@
         end: e.end(),
         text: modal.result.text,
         color: modal.result.barColor,
-        status: modal.result.status
+        status: modal.result.status,
+        rtype: modal.result.rtype
         
       };
       
@@ -298,7 +344,8 @@
         start: modal.result.start,
         end: modal.result.end,
         barColor: modal.result.barColor,
-        status: modal.result.status
+        status: modal.result.status,
+        rtype: modal.result.rtype
         
       });
       console.log("Updated.");
@@ -327,7 +374,9 @@
         end: e.end(),
         text: e.text() + " (copy)",
         barColor: e.data.barColor,
-        status: e.data.status
+        status: e.data.status,
+        rtype: e.data.rtype,
+        text1: e.data.text1
 
       };
      

@@ -14,7 +14,8 @@ if (!$db_exists) {
                         end DATETIME,
                         color TEXT,
                         persona TEXT,
-                        status TEXT)");
+                        status TEXT
+                        rtype TEXT)");
 
     $messages = array(
                     array('name' => 'Event 1',
@@ -22,10 +23,11 @@ if (!$db_exists) {
                         'end' => '2023-02-17T18:00:00',
                         'color' => '#f1c232',
                         'persona' => 'ken',
-                        'status' => 'approved')
+                        'status' => 'approved',
+                        'rtype' => 'class')
                 );
 
-    $insert = "INSERT INTO events (name, start, end,color, persona, status) VALUES (:name, :start, :end, :color, :persona, :status)";
+    $insert = "INSERT INTO events (name, start, end,color, persona, status rtype) VALUES (:name, :start, :end, :color, :persona, :status, :rtype)";
     $stmt = $db->prepare($insert);
  
     $stmt->bindParam(':name', $name);
@@ -34,6 +36,7 @@ if (!$db_exists) {
     $stmt->bindParam(':color', $color);
     $stmt->bindParam(':persona', $persona);
     $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':rtype', $rtype);
 
     foreach ($messages as $m) {
       $name = $m['name'];
@@ -42,6 +45,7 @@ if (!$db_exists) {
       $color = $m['color'];
       $persona = $m['persona'];
       $status = $m['status'];
+      $rtype = $m['rtype'];
       $stmt->execute();
     }
     

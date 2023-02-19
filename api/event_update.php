@@ -4,7 +4,7 @@ require_once '_db.php';
 $json = file_get_contents('php://input');
 $params = json_decode($json);
 
-$insert = "UPDATE events SET status = :status, color = :barColor, name = :text, start = :start, end = :end WHERE id = :id";
+$insert = "UPDATE events SET rtype = :rtype, status = :status, color = :barColor, name = :text, start = :start, end = :end WHERE id = :id";
 
 $stmt = $db->prepare($insert);
 
@@ -14,6 +14,7 @@ $stmt->bindParam(':start', $params->start);
 $stmt->bindParam(':end', $params->end);
 $stmt->bindParam(':barColor', $params->color);
 $stmt->bindParam(':status', $params->status);
+$stmt->bindParam(':rtype', $params->rtype);
 
 $stmt->execute();
 

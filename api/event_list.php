@@ -20,6 +20,8 @@ foreach($result as $row) {
   $e->end = $row['end'];
   $e->barColor = $row['color'];
   $e->status = $row['status'];
+  $e->rtype =$row['rtype'];
+  $e->text1 = $row['persona'];
   
   $events[] = $e;
 }
