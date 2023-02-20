@@ -1,5 +1,6 @@
 ﻿<?php
-include "inc/ses.php"
+session_start();
+include "api/ses.php"
 ?>
 <!DOCTYPE html>
 <html>
@@ -49,8 +50,85 @@ include "inc/ses.php"
     </div>
 
     <div style="flex-grow: 1;">
+    <style>
+    .btn-group button {
+      background-color: #04AA6D; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: left; /* Float the buttons side by side */
+      font-size: larger;
+    }
+    .btn-groups button {
+      background-color: #04AA6D; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: right; /* Float the buttons side by side */
+      font-size: larger;
+    }
 
-    <span id="start"></span> <a href="#" onclick="picker.show(); return false;">Change</a>
+    #cbtn{
+      background-color: #cfb816; 
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: left; /* Float the buttons side by side */
+    }
+    #cbtn2{
+      background-color: #eb0534; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: right; /* Float the buttons side by side */
+    }
+
+    /* Clear floats (clearfix hack) */
+    .btn-group:after{
+      content: "";
+      clear: both;
+      display: table;
+    }
+    .btn-groups:after{
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    .btn-group button:not(:last-child) {
+      border-right: none; /* Prevent double borders */
+    }
+    .btn-groups button:not(:last-child) {
+      border-right: none; /* Prevent double borders */
+    }
+
+    /* Add a background color on hover */
+    .btn-group button:hover {
+      background-color: #3e8e41;
+    }
+    .btn-groups button:hover {
+      background-color: #3e8e41;
+    }
+    </style>
+    <div class="btn-group">
+      <button>Date Today:</button>
+      <button id="start"></button>    
+      <a id="cbtn" href="#" onclick="picker.show(); return false;">Change</a>
+
+      <div class="btn-groups">
+        <a href="logout.php" id="cbtn2">Logout</a>
+        <button><?php echo $_SESSION['user']['firstname'] ?></button>
+        <button><?php echo $_SESSION['user']['auth'] ?></button>
+
+                
+      </div>
+    </div>
+
+   
       <div class="space">
         Theme: <select id="theme">
         <option value="calendar_default">Default</option>
@@ -77,7 +155,7 @@ include "inc/ses.php"
     }
    var picker = new DayPilot.DatePicker({
         target: 'start', 
-        pattern: 'yyyy-MM-dd', 
+        pattern: 'MMMM dd yyyy hh:mm tt', 
         onTimeRangeSelected: function(args) { 
             dp.startDate = args.date;
             dp.update();
@@ -225,12 +303,20 @@ include "inc/ses.php"
         args.data.fontColor ="white"        
       }
       if (args.data.status == 'pending'){      
-        args.data.html = args.data.text.toUpperCase() + ":" + "[" + args.data.status + "]";
+        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part3 ="<hr>" + args.data.status.toUpperCase()     
+        args.data.html = part1 + part2 + part3
+
         args.data.backColor = "Yellow";
         args.data.fontColor ="black"        
       }
       if (args.data.status == 'denied'){      
-        args.data.html = args.data.text + ":" + "[" + args.data.status + "]";
+        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part3 ="<hr>" + args.data.status.toUpperCase()     
+        args.data.html = part1 + part2 + part3
+        
         args.data.backColor = "red";
         args.data.fontColor ="white"        
       }
@@ -310,8 +396,8 @@ include "inc/ses.php"
         //{ name: "Name", id: "text" }
         {name: "Type of Reservation", id: "rtype", type: "select", options: restypes},
         {name: "Text", id: "text"},
-        {name: "Start", id: "start", type: "datetime"},
-        {name: "End", id: "end", type: "datetime"},
+        //{name: "Start", id: "start", type: "datetime"},
+        //{name: "End", id: "end", type: "datetime"},
         {name: "Status", id: "status", type: " select", options: statuses},
         {name: "Color", id: "barColor", type: "select", options: colors},
       ];
