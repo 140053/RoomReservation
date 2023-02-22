@@ -1,6 +1,6 @@
 ﻿<?php
 session_start();
-include "api/ses.php";
+include "../api/_room.php";
 $path = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME); 
 $home = 'Library';
 
@@ -16,7 +16,10 @@ switch ($path) {
     break;
   case 'discussion':
       $home = 'Discussion';
-    break;  
+    break;
+  case 'gs':
+      $home = 'GS Students';
+    break;       
   default:
       $home = 'Library';
     break;
@@ -47,19 +50,19 @@ switch ($path) {
   </style>
 
   <!-- DayPilot library -->
-  <script src="js/daypilot/daypilot-all.min.js"></script>
+  <script src="../js/daypilot/daypilot-all.min.js"></script>
 
   <!-- additional themes -->
-  <link type="text/css" rel="stylesheet" href="themes/calendar_green.css"/>
-  <link type="text/css" rel="stylesheet" href="themes/calendar_traditional.css"/>
-  <link type="text/css" rel="stylesheet" href="themes/calendar_transparent.css"/>
-  <link type="text/css" rel="stylesheet" href="themes/calendar_white.css"/>
+  <link type="text/css" rel="stylesheet" href="../themes/calendar_green.css"/>
+  <link type="text/css" rel="stylesheet" href="../themes/calendar_traditional.css"/>
+  <link type="text/css" rel="stylesheet" href="../themes/calendar_transparent.css"/>
+  <link type="text/css" rel="stylesheet" href="../themes/calendar_white.css"/>
 
 </head>
 <body>
 
 <div class="header" style="background: linear-gradient(to right, #23301b 0%, #009e22 44%, #011329 100%);">
-  <h1 onclick="toRoom('home')"><?php echo $home ?> Room Reservation</h1>
+<h1 onclick="toRoom('home')"><?php echo $home ?> Room Reservation</h1>
   <div></div>
 </div>
 
@@ -134,6 +137,15 @@ switch ($path) {
       .btn-groups button:hover {
         background-color: #3e8e41;
       }
+      <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0){  ?>
+      .toroom{
+        width:25%
+      }
+      <?php }else{   ?>
+        .toroom{
+          width:33.3%
+        }
+      <?php }   ?>
     </style>
     <div class="btn-group">
       <button>Date Today:</button>
@@ -164,9 +176,12 @@ switch ($path) {
       <hr>
       <p>Room Schedule</p>
       <div class="btn-group" style="width:100%">
-        <button onclick="toRoom('avr')" style="width:33.3%">Audio Visual Room</button>
-        <button  onclick="toRoom('lecture')" style="width:33.3%">Lecture Room</button>
-        <button  onclick="toRoom('discussion')" style="width:33.3%">Discussion Room </button>
+        <button  class="toroom" onclick="toRoom('avr')" >Audio Visual Room</button>
+        <button  class="toroom" onclick="toRoom('lecture')" >Lecture Room</button>
+        <button  class="toroom" onclick="toRoom('discussion')" >Discussion Room </button>
+        <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0 ){  ?>
+        <button  class="toroom" onclick="toRoom('gs')" >GS Student Room </button>
+        <?php } ?>
       </div>
     </div>
 
@@ -184,7 +199,10 @@ switch ($path) {
           break;      
         case 'discussion':
           window.location.href = "/room/discussion.php";
-          break;        
+          break; 
+        case 'gs':
+          window.location.href = "/room/gs.php";
+          break;                
         default:
           window.location.href = "/";
           break;
@@ -225,17 +243,21 @@ switch ($path) {
   const dp = new DayPilot.Calendar("dp", {
     viewType: "Week",
     headerDateFormat: "dddd (MMM d)",
-    cellHeight: 30,
+    cellHeight: 25,
     crosshairType: "Disabled",
     businessBeginsHour: 7,
     dayBeginsHour: 7,
     dayEndsHour: 18,
+    <?php if(isset($_SESSION['user'])){ ?>
+    timeRangeSelectedHandling: "Enabled",
+    <?php }else{ ?>
     timeRangeSelectedHandling: "Disabled",
     eventDeleteHandling: "Disabled",
     eventMoveHandling: "Disabled",
     eventResizeHandling: "Disabled",
     eventClickHandling: "Disabled",
     eventHoverHandling: "Disabled",
+    <?php } ?>
     //theme: "calendar_green",
     /*
     eventDeleteHandling: "Update",
@@ -245,7 +267,7 @@ switch ($path) {
         console.log("Deleted.");
     },
     */
-   //++++++++++++++++++++++++++++++++++++++++++++++______________MOVE_________________++++++++++++++++++++++++++++
+   //++++++++++++++++++++++++++++++++++++++++++++++______________MOVE_________________++++++++++++++++++++++++++++ 
     onEventMoved: async (args) => {
       const id = args.e.id();
       const data = {
@@ -260,7 +282,7 @@ switch ($path) {
         room: args.e.data.room     
       };
       //console.log(args.e.data.barColor)
-      await DayPilot.Http.post(`/api/event_update.php`, data);
+      await DayPilot.Http.post(`../api/event_update.php`, data);
       console.log("Moved.");
     },
     //++++++++++++++++++++++++++++++++++++++++++++++______________RESIZED_________________++++++++++++++++++++++++++++
@@ -277,7 +299,7 @@ switch ($path) {
         text1: args.e.data.text1,
         room: args.e.data.room    
       };
-      await DayPilot.Http.post(`/api/event_update.php`, data);
+      await DayPilot.Http.post(`../api/event_update.php`, data);
       console.log("Resized.");
     },
     //++++++++++++++++++++++++++++++++++++++++++++++______________CREATE_________________++++++++++++++++++++++++++++
@@ -335,7 +357,7 @@ switch ($path) {
 
       };
     
-      const {data} = await DayPilot.Http.post(`/api/event_create.php`, event);
+      const {data} = await DayPilot.Http.post(`../api/event_create.php`, event);
 
       var res = dp.events.add({
         start: args.start,
@@ -357,61 +379,96 @@ switch ($path) {
     },
     onBeforeEventRender: args => {
       //console.log(args.data)     
-      if (args.data.status == 'approved'){
-        var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
-        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL" + "<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
-        var part3 ="<hr>" + args.data.status.toUpperCase()     
-        args.data.html = part0+ part1 + part2 + part3
+     
+    <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0){ ?>
+        if (args.data.status == 'approved'){
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
 
-        //args.data.backColor = "green";
-        //args.data.fontColor ="white"        
-      }
-      if (args.data.status == 'pending'){
-        var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";     
-        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL" +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
-        var part3 ="<hr>" + args.data.status.toUpperCase()     
-        args.data.html = part0+ part1 + part2 + part3
-
-        //args.data.backColor = "Yellow";
-        //args.data.fontColor ="black"        
-      }
-      if (args.data.status == 'denied'){  
-        var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
-        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
-        var part3 ="<hr>" + args.data.status.toUpperCase()     
-        args.data.html = part0+ part1 + part2 + part3
-        
-        //args.data.backColor = "red";
-        //args.data.fontColor ="white"        
-      }
-      if (args.data.status == 'cancelled'){  
-        var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
-        var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By:NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
-        var part3 ="<hr>" + args.data.status.toUpperCase()     
-        args.data.html = part0+ part1 + part2 + part3
-        
-        args.data.backColor = "black";
-        args.data.fontColor ="white"        
-      }
-      /*
-      args.data.areas = [
-        {
-          top: 5,
-          right: 5,
-          width: 16,
-          height: 16,
-          symbol: "icons/daypilot.svg#minichevron-down-4",
-          fontColor: "#666",
-          visibility: "Hover",
-          action: "ContextMenu",
-          style: "background-color: #f9f9f9; border: 1px solid #666; cursor:pointer; border-radius: 15px;"
+          args.data.backColor = "green";
+          args.data.fontColor ="white"        
         }
-      ];
-      */
+        if (args.data.status == 'pending'){
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";     
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+
+          args.data.backColor = "Yellow";
+          args.data.fontColor ="black"        
+        }
+        if (args.data.status == 'denied'){  
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+          
+          args.data.backColor = "red";
+          args.data.fontColor ="white"        
+        }
+        args.data.areas = [
+          {
+            top: 5,
+            right: 5,
+            width: 16,
+            height: 16,
+            symbol: "../icons/daypilot.svg#minichevron-down-4",
+            fontColor: "#666",
+            visibility: "Hover",
+            action: "ContextMenu",
+            style: "background-color: #f9f9f9; border: 1px solid #666; cursor:pointer; border-radius: 15px;"
+          }
+        ];
+      
+    <?php }else{ ?>
+        if (args.data.status == 'approved'){
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By: NULL" + "<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+
+          //args.data.backColor = "green";
+          //args.data.fontColor ="white"        
+        }
+        if (args.data.status == 'pending'){
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";     
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By: NULL" +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+
+          //args.data.backColor = "Yellow";
+          //args.data.fontColor ="black"        
+        }
+        if (args.data.status == 'denied'){  
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By: NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+          
+          //args.data.backColor = "red";
+          //args.data.fontColor ="white"        
+        }
+        if (args.data.status == 'cancelled'){  
+          var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
+          var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
+          var part2 =  "<hr>By:NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+          var part3 ="<hr>" + args.data.status.toUpperCase()     
+          args.data.html = part0+ part1 + part2 + part3
+          
+          args.data.backColor = "black";
+          args.data.fontColor ="white"        
+        }
+
+    <?php } ?>
+     
     },
     contextMenu: new DayPilot.Menu({
       items: [
@@ -448,16 +505,23 @@ switch ($path) {
     },
     //++++++++++++++++++++++++++++++++++++++++++++++______________ONLOAD_________________++++++++++++++++++++++++++++
     loadEvents() {
-      dp.events.load("/api/event_list.php");
+      dp.events.load("../api/avr_event_list.php");
     },
     async viewRes(e){
       //console.log(e)
+      <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0){ ?>
       var part0 = "Room: <b>"+ e.data.room + " ROOM </b><hr>";
       var part1 = "Type: "+e.data.rtype.toUpperCase() + " : " + "[" + e.data.text.toUpperCase() + "] <br> ";
       var part2 =  "<hr>By: " + e.data.text1 +"<br>FROM: "+ getTimeFromDate(e.data.start) + "<br>To: " + getTimeFromDate(e.data.end);
       var part3a ="<hr>STATUS [" + e.data.status.toUpperCase() + "]"
       var part3 = "<div class='btn-groups'><button>" + e.data.status.toUpperCase() + "</button></div>"    
-     
+     <?php }else{ ?>
+      var part0 = "Room: <b>"+ e.data.room + " ROOM </b><hr>";
+      var part1 = "Type: "+e.data.rtype.toUpperCase() + " : " + "[" + e.data.text.toUpperCase() + "] <br> ";
+      var part2 =  "<hr>By: NULL " +"<br>FROM: "+ getTimeFromDate(e.data.start) + "<br>To: " + getTimeFromDate(e.data.end);
+      var part3a ="<hr>STATUS [" + e.data.status.toUpperCase() + "]"
+      var part3 = "<div class='btn-groups'><button>" + e.data.status.toUpperCase() + "</button></div>"    
+      <?php } ?>
       const form = [
         {
           type: 'title',
@@ -536,7 +600,7 @@ switch ($path) {
         
       };
       
-      await DayPilot.Http.post(`/api/event_update.php`, data);
+      await DayPilot.Http.post(`../api/event_update.php`, data);
 
       dp.events.update({
         ...e.data,
@@ -561,7 +625,7 @@ switch ($path) {
       const params = {
         id
       };
-      await DayPilot.Http.post(`/api/event_delete.php`, params);
+      await DayPilot.Http.post(`../api/event_delete.php`, params);
 
       dp.events.remove(id);
 
@@ -582,7 +646,7 @@ switch ($path) {
 
       };
      
-      const { data } = await DayPilot.Http.post(`/api/event_create.php`, event);
+      const { data } = await DayPilot.Http.post(`../api/event_create.php`, event);
 
       dp.events.add({
         ...event,

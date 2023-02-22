@@ -14,7 +14,7 @@ if(isset($_SESSION['user'])){
   <title>Room Reservation</title>
 
   <style type="text/css">
-      p, body, td, input, select { font-family: -apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-size: 14px; }
+      p, body, td, input, select { font-family: -apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-size: 12px; }
       body { padding: 0px; margin: 0px; background-color: #ffffff; }
       a { color: #1155a3; }
       .space { margin: 10px 0px 10px 0px; }
@@ -205,6 +205,7 @@ if(isset($_SESSION['user'])){
         }
 
         .modal-content{
+          width: 25%;
                   
           font-family: Arial;
         }
@@ -288,12 +289,17 @@ if(isset($_SESSION['user'])){
   const dp = new DayPilot.Calendar("dp", {
     viewType: "Day",
     headerDateFormat: "dddd",
-    cellHeight: 30,
+    cellHeight: 25,
     crosshairType: "Disabled",
     businessBeginsHour: 7,
     dayBeginsHour: 7,
     dayEndsHour: 18,
-    timeRangeSelectedHandling: "Enabled",
+    timeRangeSelectedHandling: "Disabled",
+    eventDeleteHandling: "Disabled",
+    eventMoveHandling: "Disabled",
+    eventResizeHandling: "Disabled",
+    eventClickHandling: "Disabled",
+    eventHoverHandling: "Disabled",
     theme: "calendar_green",
     /*
     eventDeleteHandling: "Update",
@@ -406,13 +412,14 @@ if(isset($_SESSION['user'])){
     onBeforeEventRender: args => {
       console.log(args.data)     
       if (args.data.status == 'approved'){
+        var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM: "+ getTimeFromDate(args.data.start) + "<br>To: " + getTimeFromDate(args.data.end);
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
         var part3 ="<hr>" + args.data.status.toUpperCase()     
-        args.data.html = part1 + part2 + part3
+        args.data.html = part0+ part1 + part2 + part3
 
-        args.data.backColor = "green";
-        args.data.fontColor ="white"        
+        //args.data.backColor = "green";
+        //args.data.fontColor ="white"        
       }
       if (args.data.status == 'pending'){      
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
@@ -420,8 +427,8 @@ if(isset($_SESSION['user'])){
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part1 + part2 + part3
 
-        args.data.backColor = "Yellow";
-        args.data.fontColor ="black"        
+        //args.data.backColor = "Yellow";
+        //args.data.fontColor ="black"        
       }
       if (args.data.status == 'denied'){      
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
@@ -429,9 +436,10 @@ if(isset($_SESSION['user'])){
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part1 + part2 + part3
         
-        args.data.backColor = "red";
-        args.data.fontColor ="white"        
+        //args.data.backColor = "red";
+        //args.data.fontColor ="white"        
       }
+      /*
       args.data.areas = [
         {
           top: 5,
@@ -445,6 +453,7 @@ if(isset($_SESSION['user'])){
           style: "background-color: #f9f9f9; border: 1px solid #666; cursor:pointer; border-radius: 15px;"
         }
       ];
+      */
     },
     
     contextMenu: new DayPilot.Menu({

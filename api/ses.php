@@ -15,7 +15,19 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $_SERVER['REQUEST_URI'])) {
 $path = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME); 
 
 if(isset($_SESSION["login"])){
-    if ($path == 'index'){
+    if ($path == 'home'){
+        
+        if(!isset($_SESSION['user']) ){
+            header('Location: /login.php');
+            exit();
+        }
+        if($_SESSION["auth"] == '1'){
+            //echo 'user';
+            header('Location: /user.php');
+            exit();
+        }     
+    }
+    if ($path == 'avr'){
         
         if(!isset($_SESSION['user']) ){
             header('Location: /login.php');
@@ -68,7 +80,7 @@ if(isset($_SESSION["login"])){
                     //echo 'admin';
                     $_SESSION["auth"] = $auth;
                     $_SESSION["login"] == true;
-                    header('Location: /index.php');
+                    header('Location: /home.php');
                     exit();
     
                     
@@ -88,7 +100,7 @@ if(isset($_SESSION["login"])){
             exit();
         }
     }
-    if($path =='index'){
+    if($path =='home' or $path == 'avr'){
         if(!isset($_SESSION['user']) ){
             header('Location: /login.php');
             exit();

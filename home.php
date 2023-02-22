@@ -17,11 +17,13 @@ switch ($path) {
   case 'discussion':
       $home = 'Discussion';
     break;  
+  case 'gs':
+      $home = 'GS Students';
+    break;  
   default:
       $home = 'Library';
     break;
 }
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -31,7 +33,7 @@ switch ($path) {
   <title><?php echo $home ?> Room Reservation</title>
 
   <style type="text/css">
-      p, body, td, input, select { font-family: -apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-size: 14px; }
+      p, body, td, input, select { font-family: -apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; font-size: 12px; }
       body { padding: 0px; margin: 0px; background-color: #ffffff; }
       a { color: #1155a3; }
       .space { margin: 10px 0px 10px 0px; }
@@ -59,8 +61,8 @@ switch ($path) {
 <body>
 
 <div class="header" style="background: linear-gradient(to right, #23301b 0%, #009e22 44%, #011329 100%);">
-  <h1 onclick="toRoom('home')"><?php echo $home ?> Room Reservation</h1>
-  <div></div>
+<h1 onclick="toRoom('home')"><?php echo $home ?> Room Reservation</h1>
+  <div>Schedule</div>
 </div>
 
 <div class="main">
@@ -72,80 +74,88 @@ switch ($path) {
 
     <div style="flex-grow: 1;">
     <style>
-      .btn-group button {
-        background-color: #04AA6D; /* Green background */
-        border: 1px solid green; /* Green border */
-        color: white; /* White text */
-        padding: 10px 24px; /* Some padding */
-        cursor: pointer; /* Pointer/hand icon */
-        float: left; /* Float the buttons side by side */
-        font-size: larger;
-      }
-      .btn-groups button {
-        background-color: #04AA6D; /* Green background */
-        border: 1px solid green; /* Green border */
-        color: white; /* White text */
-        padding: 10px 24px; /* Some padding */
-        cursor: pointer; /* Pointer/hand icon */
-        float: right; /* Float the buttons side by side */
-        font-size: larger;
-      }
+    .btn-group button {
+      background-color: #04AA6D; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: left; /* Float the buttons side by side */
+      font-size: larger;
+    }
+    .btn-groups button {
+      background-color: #04AA6D; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: right; /* Float the buttons side by side */
+      font-size: larger;
+    }
 
-      #cbtn{
-        background-color: #cfb816; 
-        border: 1px solid green; /* Green border */
-        color: white; /* White text */
-        padding: 10px 24px; /* Some padding */
-        cursor: pointer; /* Pointer/hand icon */
-        float: left; /* Float the buttons side by side */
-      }
-      #cbtn2{
-        background-color: #eb0534; /* Green background */
-        border: 1px solid green; /* Green border */
-        color: white; /* White text */
-        padding: 10px 24px; /* Some padding */
-        cursor: pointer; /* Pointer/hand icon */
-        float: right; /* Float the buttons side by side */
-      }
+    #cbtn{
+      background-color: #cfb816; 
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: left; /* Float the buttons side by side */
+    }
+    #cbtn2{
+      background-color: #eb0534; /* Green background */
+      border: 1px solid green; /* Green border */
+      color: white; /* White text */
+      padding: 10px 24px; /* Some padding */
+      cursor: pointer; /* Pointer/hand icon */
+      float: right; /* Float the buttons side by side */
+    }
 
-      /* Clear floats (clearfix hack) */
-      .btn-group:after{
-        content: "";
-        clear: both;
-        display: table;
-      }
-      .btn-groups:after{
-        content: "";
-        clear: both;
-        display: table;
-      }
+    /* Clear floats (clearfix hack) */
+    .btn-group:after{
+      content: "";
+      clear: both;
+      display: table;
+    }
+    .btn-groups:after{
+      content: "";
+      clear: both;
+      display: table;
+    }
 
-      .btn-group button:not(:last-child) {
-        border-right: none; /* Prevent double borders */
-      }
-      .btn-groups button:not(:last-child) {
-        border-right: none; /* Prevent double borders */
-      }
+    .btn-group button:not(:last-child) {
+      border-right: none; /* Prevent double borders */
+    }
+    .btn-groups button:not(:last-child) {
+      border-right: none; /* Prevent double borders */
+    }
 
-      /* Add a background color on hover */
-      .btn-group button:hover {
-        background-color: #3e8e41;
+    /* Add a background color on hover */
+    .btn-group button:hover {
+      background-color: #3e8e41;
+    }
+    .btn-groups button:hover {
+      background-color: #3e8e41;
+    }
+    <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0){  ?>
+      .toroom{
+        width:25%
       }
-      .btn-groups button:hover {
-        background-color: #3e8e41;
-      }
+      <?php }else{   ?>
+        .toroom{
+          width:33.3%
+        }
+      <?php }   ?>
     </style>
     <div class="btn-group">
       <button>Date Today:</button>
       <button id="start"></button>    
-      <!--a id="cbtn" href="#" onclick="picker.show(); return false;">Change</a-->
+      <a id="cbtn" href="#" onclick="picker.show(); return false;">Change</a>
+
       <div class="btn-groups">
-        <?php if(isset($_SESSION['user'])){  ?>
-          <a href="/logout.php" id="cbtn2">Logout</a>
-          <button><?php echo $_SESSION['user']['firstname'] ?></button>
-        <?php }else{ ?>
-          <a href="/login.php" id="cbtn2">Login</a>
-        <?php } ?>
+        <a href="logout.php" id="cbtn2">Logout</a>
+        <button><?php echo $_SESSION['user']['firstname'] ?></button>
+        <!--button><?php echo $_SESSION['user']['auth'] ?></button-->                
+      </div>
     </div>
 
    
@@ -158,15 +168,18 @@ switch ($path) {
         <option value="calendar_transparent">Transparent</option>
       </select>
       </div>
-     
+
       <div id="dp"></div>
       <br>
       <hr>
       <p>Room Schedule</p>
       <div class="btn-group" style="width:100%">
-        <button onclick="toRoom('avr')" style="width:33.3%">Audio Visual Room</button>
-        <button  onclick="toRoom('lecture')" style="width:33.3%">Lecture Room</button>
-        <button  onclick="toRoom('discussion')" style="width:33.3%">Discussion Room </button>
+        <button  class="toroom" onclick="toRoom('avr')" >Audio Visual Room</button>
+        <button  class="toroom" onclick="toRoom('lecture')" >Lecture Room</button>
+        <button  class="toroom" onclick="toRoom('discussion')" >Discussion Room </button>
+        <?php if(isset($_SESSION['user']) and $_SESSION['auth'] == 0 ){  ?>
+        <button  class="toroom" onclick="toRoom('gs')" >Discussion Room </button>
+        <?php } ?>
       </div>
     </div>
 
@@ -174,7 +187,7 @@ switch ($path) {
 </div>
 
 <script>
-    function toRoom(room){
+      function toRoom(room){
       switch (room) {
         case 'avr':
           window.location.href = "/room/avr.php";
@@ -184,13 +197,15 @@ switch ($path) {
           break;      
         case 'discussion':
           window.location.href = "/room/discussion.php";
-          break;        
+          break; 
+        case 'gs':
+          window.location.href = "/room/gs.php";
+          break;                
         default:
           window.location.href = "/";
           break;
       }
     }
-
     function getTimeFromDate(dateString) {
       const date = new Date(dateString);
       const hour = date.getHours();
@@ -220,23 +235,18 @@ switch ($path) {
       app.loadEvents();
     }
   });
-  //nav.init();
+  nav.init();
 
   const dp = new DayPilot.Calendar("dp", {
     viewType: "Week",
     headerDateFormat: "dddd (MMM d)",
-    cellHeight: 30,
+    cellHeight: 25,
     crosshairType: "Disabled",
     businessBeginsHour: 7,
     dayBeginsHour: 7,
     dayEndsHour: 18,
-    timeRangeSelectedHandling: "Disabled",
-    eventDeleteHandling: "Disabled",
-    eventMoveHandling: "Disabled",
-    eventResizeHandling: "Disabled",
-    eventClickHandling: "Disabled",
-    eventHoverHandling: "Disabled",
-    //theme: "calendar_green",
+    timeRangeSelectedHandling: "Enabled",
+    theme: "calendar_green",
     /*
     eventDeleteHandling: "Update",
     onEventDeleted: async (args) => {
@@ -293,6 +303,7 @@ switch ($path) {
           {name: "Approved", id: 'approved'},
           {name: "Pending", id: 'pending'},
           {name: "Denied", id: 'denied'},
+          {name: "Cancelled", id: 'cancelled'}
 
       ];
       const restypes = [
@@ -360,7 +371,7 @@ switch ($path) {
       if (args.data.status == 'approved'){
         var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL" + "<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part0+ part1 + part2 + part3
 
@@ -370,7 +381,7 @@ switch ($path) {
       if (args.data.status == 'pending'){
         var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";     
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL" +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part0+ part1 + part2 + part3
 
@@ -380,7 +391,7 @@ switch ($path) {
       if (args.data.status == 'denied'){  
         var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By: NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part0+ part1 + part2 + part3
         
@@ -390,14 +401,13 @@ switch ($path) {
       if (args.data.status == 'cancelled'){  
         var part0 = "<b>"+ args.data.room + " ROOM </b><hr>";
         var part1 = args.data.rtype.toUpperCase() + " : " + "[" + args.data.text.toUpperCase() + "] <br> ";
-        var part2 =  "<hr>By:NULL"  +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
+        var part2 =  "<hr>By:" + args.data.text1 +"<br>FROM:"+ getTimeFromDate(args.data.start) + "<br>To:" + getTimeFromDate(args.data.end);
         var part3 ="<hr>" + args.data.status.toUpperCase()     
         args.data.html = part0+ part1 + part2 + part3
         
         args.data.backColor = "black";
         args.data.fontColor ="white"        
       }
-      /*
       args.data.areas = [
         {
           top: 5,
@@ -411,7 +421,6 @@ switch ($path) {
           style: "background-color: #f9f9f9; border: 1px solid #666; cursor:pointer; border-radius: 15px;"
         }
       ];
-      */
     },
     contextMenu: new DayPilot.Menu({
       items: [
@@ -487,11 +496,13 @@ switch ($path) {
                     {name: "Green", id: "#6aa84f"},
                     {name: "Yellow", id: "#f1c232"},
                     {name: "Red", id: "#cc0000"},
+                    {name: "Black", id: "#000000"},
                 ];
       const statuses = [
           {name: "Approved", id: 'approved'},
           {name: "Pending", id: 'pending'},
           {name: "Denied", id: 'denied'},
+          {name: "Cancelled", id: 'cancelled'}
 
       ];
       const restypes = [

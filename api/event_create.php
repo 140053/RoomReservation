@@ -4,7 +4,7 @@ require_once '_db.php';
 $json = file_get_contents('php://input');
 $params = json_decode($json);
 
-$insert = "INSERT INTO events (name, start, end, color, persona, status, rtype) VALUES (:name, :start, :end, :barColor, :persona, :status, :rtype)";
+$insert = "INSERT INTO events (name, start, end, color, persona, status, rtype, room) VALUES (:name, :start, :end, :barColor, :persona, :status, :rtype, :room)";
 
 $stmt = $db->prepare($insert);
 
@@ -15,6 +15,7 @@ $stmt->bindParam(':persona', $params->text1);
 $stmt->bindParam(':barColor', $params->barColor);
 $stmt->bindParam(':status', $params->status);
 $stmt->bindParam(':rtype', $params->rtype);
+$stmt->bindParam(':room', $params->room);
 $stmt->execute();
 
 class Result {}

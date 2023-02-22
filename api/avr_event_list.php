@@ -1,7 +1,7 @@
 <?php
-require_once '_db.php';
+require_once '_room.php';
 
-$stmt = $db->prepare('SELECT * FROM events WHERE NOT ((end <= :start) OR (start >= :end))');
+$stmt = $db->prepare('SELECT * FROM events WHERE NOT ((end <= :start) OR (start >= :end)) and room = "AVR"');
 
 $stmt->bindParam(':start', $_GET['start']);
 $stmt->bindParam(':end', $_GET['end']);
